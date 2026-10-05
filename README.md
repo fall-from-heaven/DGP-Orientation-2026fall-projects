@@ -25,3 +25,10 @@
 | 语言学习与官方文档查询方法 | [Python](projects/python/learning.md)、[Rust](projects/rust/learning.md) |
 
 `common/` 中的要求对两条路线共同适用；语言目录集中维护开发说明、语言学习指引和启动差异。
+
+
+# stage0, changed by Oliver
+date: 26/10/5
+## what I have done:
+1. git learning (sth. like commit rebase marge branch and so on)
+2. github learning (fork,token use ...)
