@@ -54,3 +54,28 @@ text: hello
 200 {'data': 'hello'}
 ping / register / login / logout / list / echo / delete-user / put / get / delete / q > q
 PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> 
+
+添加功能：echo的Unicode、多行、空行提示实现：
+已可正常运行：
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > echo
+Enter text (empty line to finish):
+你好RM😀
+
+200 {'data': '你好RM😀'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > echo
+Enter text (empty line to finish):
+
+No text entered. Please enter at least one line.
+
+No text entered. Please enter at least one line.
+hello
+
+200 {'data': 'hello'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > echo
+Enter text (empty line to finish):
+hello
+world
+
+200 {'data': 'hello\nworld'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > q
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync>
