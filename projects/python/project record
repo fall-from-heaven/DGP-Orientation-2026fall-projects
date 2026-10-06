@@ -1,0 +1,56 @@
+客户端已有功能验证记录：
+服务端：
+PS C:\Users\孙晟铭> cd D:\tools\rm-projects-rust-windows-x86_64-reference-v0.2.1
+PS D:\tools\rm-projects-rust-windows-x86_64-reference-v0.2.1> .\rm-server-async.exe --address 127.0.0.1:7878
+Listening on http://127.0.0.1:7878
+Press Ctrl+C to exit. All in-memory data is lost on exit.
+Routes:
+  GET /ping
+  POST /echo
+  POST /users
+  POST /sessions
+  DELETE /sessions/current
+  DELETE /users/me
+  GET /texts
+  PUT /texts/{name}
+  GET /texts/{name}
+  DELETE /texts/{name}
+Rocket has launched from http://127.0.0.1:7878
+GET "/ping" -> 200 0.1ms
+POST "/users" -> 201 18.5ms
+POST "/sessions" -> 200 18.4ms
+GET "/texts" -> 200 0.0ms
+DELETE "/sessions/current" -> 200 0.0ms
+客户端：
+PS C:\Users\孙晟铭> cd D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run rm-client --url http://127.0.0.1:7878
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > ping
+200 {'data': 'pong'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > register
+username: plrj1112
+password:
+201 {'data': {'username': 'plrj1112'}}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > login
+username: plrj1112
+password:
+200 {'data': {'expires_in': 300, 'token': 'a4d5f680150b0857d265c9c1f5532d4a659fbd5970ebcae3c1f6a5c03bf07723'}}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > list
+200 {'data': []}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > logout
+200 {'data': None}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > q
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync>
+
+结果：服务端均有响应，可正常通信，注册，登录，登出，退出程序。
+
+
+添加功能：echo
+遇到问题：信息接收写作：body = {"message": input("message: ")}，与协议要求（text）冲突
+
+更正：body = {"text": input("text: ")}  功能正常运行：
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run rm-client --url http://127.0.0.1:7878
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > echo
+text: hello
+200 {'data': 'hello'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > q
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> 
