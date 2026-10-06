@@ -47,7 +47,17 @@ def main() -> None:
                         "list": ("GET", "/texts"),
                     }[command]
                 elif command == "echo":
-                    body = {"text": input("text: ")}
+                    print("Enter text (empty line to finish):")
+                    lines = []
+                    while True:
+                        line = input()
+                        if (line == ""):
+                             if not lines:
+                                print("No text entered. Please enter at least one line.")
+                                continue
+                             break
+                        lines.append(line)
+                    body = {"text": "\n".join(lines)}
                     method, path = "POST", "/echo"
                 elif command in ("delete-user", "put", "get", "delete"):
                     print("This task is not implemented in the starting code yet.")
