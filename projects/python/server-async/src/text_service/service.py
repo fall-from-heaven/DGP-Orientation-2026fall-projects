@@ -1,5 +1,5 @@
 """In-memory baseline. Implement the task routes in handle()."""
-
+import time
 import hashlib
 import hmac
 import re
@@ -39,13 +39,15 @@ class User:
     salt: bytes
     digest: bytes
     token: str | None = None
+    token_deadline: float | None = None #token 过期时间点
     texts: dict[str, str] = field(default_factory=dict)
 
 
 class Service:
-    def __init__(self) -> None:
+    def __init__(self, token_ttl: int = 300) -> None:
         self.users: dict[str, User] = {}
         self.lock = threading.Lock()
+        self.token_ttl = token_ttl
 
     def handle(
         self, method: str, path: str, body: Any, authorization: str
@@ -88,11 +90,13 @@ class Service:
                 if self.users.get(name) is not user or not hmac.compare_digest(digest, expected):
                     return 401, {"message": "Invalid username or password"}
                 user.token = secrets.token_urlsafe(32)
+                user.token_deadline = time.monotonic() + self.token_ttl  # 设置 token 
                 # Later server task: record a deadline and return expires_in.
-                return 200, {"data": {"token": user.token}}
+                return 200, {"data": {"token": user.token, "expires_in": self.token_ttl}}
         protected = (
             path in ("/texts", "/sessions/current")
             or (path.startswith("/texts/") and method in ("GET", "PUT", "DELETE"))
+            or (path == "/users/me" and method == "DELETE")
         )
         if protected:
             token = (
@@ -100,8 +104,14 @@ class Service:
             )
             with self.lock:
                 user = next((u for u in self.users.values() if token and u.token == token), None)
+                
                 if user is None:
                     return 401, {"message": "Login required"}
+
+                if user.token_deadline is not None and time.monotonic() > user.token_deadline:
+                    user.token = None
+                    user.token_deadline = None
+                    return 401, {"message": "Token expired"}
 
                 if path == "/sessions/current" and method == "DELETE":
                     user.token = None
@@ -133,4 +143,9 @@ class Service:
                         return 200, {"data": user.texts[name]}
                     del user.texts[name]
                     return 200, {"data": None}
-
+                if path == "/users/me" and method == "DELETE":
+                    for uname, u in list(self.users.items()):
+                        if u is user:
+                            del self.users[uname]
+                            break
+                    return 200, {"data": None}

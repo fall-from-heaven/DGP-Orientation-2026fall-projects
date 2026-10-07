@@ -531,3 +531,25 @@ FAILED tests/test_http.py::test_unimplemented_routes_are_absent[GET-/texts/note]
 FAILED tests/test_http.py::test_unimplemented_routes_are_absent[DELETE-/texts/note] - assert 401 == 404
 =================== 4 failed, 13 passed in 1.16s ====================
 PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\server-async> 
+
+
+user delete服务端实现：
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > register
+username: plrj1112
+password:
+201 {'data': {'username': 'plrj1112'}}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > login
+username: plrj1112
+password:
+200 {'data': {'token': 'WdargCMIkBB_UxXDKyLtbNkrxD5VvbW5SrYWRgqP-ww'}}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > delete-user
+200 {'data': None}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > login
+username: plrj1112
+password:
+401 {'message': 'Invalid username or password'}
+Please log in again.
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q >
+
+
+服务端业务能力补全（）

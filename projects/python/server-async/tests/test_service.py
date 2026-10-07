@@ -37,3 +37,31 @@ def test_concurrent_registration() -> None:
     with ThreadPoolExecutor(max_workers=4) as pool:
         statuses = list(pool.map(lambda _: service.handle("POST", "/users", body, "")[0], range(4)))
     assert sorted(statuses) == [201, 409, 409, 409]
+def test_login_returns_expires_in() -> None:
+    service = Service(token_ttl=300)
+    account = {"username": "alice", "password": "password1"}
+    service.handle("POST", "/users", account, "")
+    status, result = service.handle("POST", "/sessions", account, "")
+    assert status == 200
+    assert result["data"]["expires_in"] == 300
+    assert "token" in result["data"]
+
+
+def test_token_valid_within_ttl() -> None:
+    service = Service(token_ttl=300)
+    account = {"username": "alice", "password": "password1"}
+    service.handle("POST", "/users", account, "")
+    _, login = service.handle("POST", "/sessions", account, "")
+    token = login["data"]["token"]
+    # 有效期内访问 → 200
+    assert service.handle("GET", "/texts", None, f"Bearer {token}")[0] == 200
+
+
+def test_token_expired() -> None:
+    service = Service(token_ttl=0)  # 有效期 0 秒 → 登录瞬间就过期
+    account = {"username": "alice", "password": "password1"}
+    service.handle("POST", "/users", account, "")
+    _, login = service.handle("POST", "/sessions", account, "")
+    token = login["data"]["token"]
+    # 已过期 → 401
+    assert service.handle("GET", "/texts", None, f"Bearer {token}")[0] == 401

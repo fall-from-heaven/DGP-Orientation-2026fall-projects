@@ -60,19 +60,42 @@ async def test_body_limit_and_routing(client: AsyncClient) -> None:
     assert (await client.get("/ping?test=1")).json() == {"data": "pong"}
 
 
-@pytest.mark.parametrize(
-    ("method", "path"),
-    [
-        ("DELETE", "/users/me"),
-        ("PUT", "/texts/note"),
-        ("GET", "/texts/note"),
-        ("DELETE", "/texts/note"),
-    ],
-)
-async def test_unimplemented_routes_are_absent(client: AsyncClient, method: str, path: str) -> None:
-    assert (await client.request(method, path)).status_code == 404
 
 
 @pytest.mark.parametrize("path", ["/ping", "/users", "/sessions", "/sessions/current", "/texts"])
 async def test_wrong_method_precedes_authentication(client: AsyncClient, path: str) -> None:
     assert (await client.patch(path)).status_code == 405
+
+
+
+async def test_text_crud_flow(client: AsyncClient) -> None:
+    await client.post("/users", json={"username": "alice", "password": "password1"})
+    login = await client.post("/sessions", json={"username": "alice", "password": "password1"})
+    token = login.json()["data"]["token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    assert (await client.put("/texts/note", json={"text": "hello world"}, headers=headers)).status_code == 200
+    get = await client.get("/texts/note", headers=headers)
+    assert get.status_code == 200
+    assert get.json()["data"] == "hello world"
+    lst = await client.get("/texts", headers=headers)
+    assert lst.json()["data"] == ["note"]
+    assert (await client.delete("/texts/note", headers=headers)).status_code == 200
+    assert (await client.get("/texts/note", headers=headers)).status_code == 404
+
+
+async def test_delete_user(client: AsyncClient) -> None:
+    await client.post("/users", json={"username": "bob", "password": "password1"})
+    login = await client.post("/sessions", json={"username": "bob", "password": "password1"})
+    token = login.json()["data"]["token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    assert (await client.delete("/users/me", headers=headers)).status_code == 200
+    assert (await client.get("/texts", headers=headers)).status_code == 401   # 旧 token 失效
+    assert (await client.post("/sessions", json={"username": "bob", "password": "password1"})).status_code == 401  # 账号已删
+
+
+async def test_missing_token_is_401(client: AsyncClient) -> None:
+    assert (await client.get("/texts")).status_code == 401
+    assert (await client.get("/texts/note")).status_code == 401
+    assert (await client.delete("/users/me")).status_code == 401
