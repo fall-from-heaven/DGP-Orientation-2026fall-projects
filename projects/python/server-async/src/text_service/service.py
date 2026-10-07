@@ -1,10 +1,10 @@
 """In-memory baseline. Implement the task routes in handle()."""
-
 import hashlib
 import hmac
 import re
 import secrets
 import threading
+import time
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -14,14 +14,22 @@ ROUTES = (
     ("POST", "/sessions"),
     ("DELETE", "/sessions/current"),
     ("GET", "/texts"),
+    ("POST", "/echo"),
+    ("PUT", "/texts/{name}"),       
+    ("GET", "/texts/{name}"),       
+    ("DELETE", "/texts/{name}"),   
+    ("DELETE", "/users/me"),
 )
 
 
 def route_error(method: str, path: str) -> int | None:
-    allowed = next((verb for verb, route in ROUTES if route == path), None)
-    if allowed is None:
+    methods: set[str] = set()
+    for verb, route in ROUTES:
+        if route == path or "{" in route and re.fullmatch(route.replace("{name}", "[^/]+"), path):
+            methods.add(verb)
+    if not methods:
         return 404
-    return None if method == allowed else 405
+    return None if method in methods else 405
 
 
 @dataclass
@@ -29,13 +37,15 @@ class User:
     salt: bytes
     digest: bytes
     token: str | None = None
+    token_deadline: float | None = None #token 过期时间点
     texts: dict[str, str] = field(default_factory=dict)
 
 
 class Service:
-    def __init__(self) -> None:
+    def __init__(self, token_ttl: int = 300) -> None:
         self.users: dict[str, User] = {}
         self.lock = threading.Lock()
+        self.token_ttl = token_ttl
 
     def handle(
         self, method: str, path: str, body: Any, authorization: str
@@ -78,21 +88,63 @@ class Service:
                 if self.users.get(name) is not user or not hmac.compare_digest(digest, expected):
                     return 401, {"message": "Invalid username or password"}
                 user.token = secrets.token_urlsafe(32)
+                user.token_deadline = time.monotonic() + self.token_ttl  # 设置 token 
                 # Later server task: record a deadline and return expires_in.
-                return 200, {"data": {"token": user.token}}
-        protected = path in ("/texts", "/sessions/current")
+                return 200, {"data": {"token": user.token, "expires_in": self.token_ttl}}
+        protected = (
+            path in ("/texts", "/sessions/current")
+            or (path.startswith("/texts/") and method in ("GET", "PUT", "DELETE"))
+            or (path == "/users/me" and method == "DELETE")
+        )
         if protected:
             token = (
                 authorization.removeprefix("Bearer ") if authorization.startswith("Bearer ") else ""
             )
             with self.lock:
                 user = next((u for u in self.users.values() if token and u.token == token), None)
+                
                 if user is None:
                     return 401, {"message": "Login required"}
-                # Later server task: check token expiry here, before reading or modifying state.
+
+                if user.token_deadline is not None and time.monotonic() > user.token_deadline:
+                    user.token = None
+                    user.token_deadline = None
+                    return 401, {"message": "Token expired"}
+
                 if path == "/sessions/current" and method == "DELETE":
                     user.token = None
                     return 200, {"data": None}
+
                 if path == "/texts" and method == "GET":
                     return 200, {"data": sorted(user.texts)}
+
+                # ↓ 把 /texts/{name} 的处理移到这里（在锁内、user 可用）
+                if path.startswith("/texts/") and method in ("GET", "PUT", "DELETE"):
+                    name = path.removeprefix("/texts/")
+                    if not re.fullmatch(r"[A-Za-z0-9_-]{1,64}", name):
+                        return 400, {"message": "Invalid text name"}
+                    if method == "PUT":
+                        if (
+                            not isinstance(body, dict)
+                            or set(body) != {"text"}
+                            or not isinstance(body["text"], str)
+                        ):
+                            return 400, {"message": "Expected text"}
+                        text = body["text"]
+                        if len(text.encode("utf-8")) > 65536:
+                            return 413, {"message": "text too large"}
+                        user.texts[name] = text
+                        return 200, {"data": None}
+                    if name not in user.texts:
+                        return 404, {"message": "Text not found"}
+                    if method == "GET":
+                        return 200, {"data": user.texts[name]}
+                    del user.texts[name]
+                    return 200, {"data": None}
+                if path == "/users/me" and method == "DELETE":
+                    for uname, u in list(self.users.items()):
+                        if u is user:
+                            del self.users[uname]
+                            break
+                    return 200, {"data": None}
         return 404, {"message": "Not found"}
