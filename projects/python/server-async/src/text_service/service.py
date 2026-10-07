@@ -1,10 +1,10 @@
 """In-memory baseline. Implement the task routes in handle()."""
-import time
 import hashlib
 import hmac
 import re
 import secrets
 import threading
+import time
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -25,9 +25,7 @@ ROUTES = (
 def route_error(method: str, path: str) -> int | None:
     methods: set[str] = set()
     for verb, route in ROUTES:
-        if route == path:
-            methods.add(verb)
-        elif "{" in route and re.fullmatch(route.replace("{name}", "[^/]+"), path):
+        if route == path or "{" in route and re.fullmatch(route.replace("{name}", "[^/]+"), path):
             methods.add(verb)
     if not methods:
         return 404
@@ -149,3 +147,4 @@ class Service:
                             del self.users[uname]
                             break
                     return 200, {"data": None}
+        return 404, {"message": "Not found"}
