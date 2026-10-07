@@ -5,6 +5,15 @@ from typing import Any
 import httpx
 
 
+def read_multiline() -> str:
+    lines = []
+    try:
+        while True:
+            lines.append(input())
+    except EOFError:          # Ctrl+Z 触发，作为结束
+        pass
+    return "\n".join(lines)
+
 def exchange(
     client: httpx.Client, method: str, path: str, token: str = "", body: object = None
 ) -> tuple[int, Any]:
@@ -56,14 +65,7 @@ def main() -> None:
                     #             break
                     #         lines.append(line)
                     #     return ("\n".join(lines))
-                    def read_multiline() -> str:
-                        lines = []
-                        try:
-                            while True:
-                                lines.append(input())
-                        except EOFError:          # Ctrl+Z 触发，作为结束
-                            pass
-                        return "\n".join(lines)
+                    
                     body = {"text": read_multiline()}
                     method, path = "POST", "/echo"
                 elif command in ("delete-user", "put", "get", "delete"):

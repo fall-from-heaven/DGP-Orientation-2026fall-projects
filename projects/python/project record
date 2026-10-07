@@ -106,3 +106,24 @@ Hello, World! こんにちは😀
 ^Z
 200 {'data': '\n\n\n\n\nhello,world\n\n\nhello,\nworld!\n\n\n\nHello, World! こんにちは😀'}
 ping / register / login / logout / list / echo / delete-user / put / get / delete / q >
+
+
+
+测试文件更新： list,register, login, logout, echo_common, echo_empty, echo_unicode,echo_multiline,ping 9tests
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run pytest          
+============================================================================= test session starts ==============================================================================
+platform win32 -- Python 3.13.16, pytest-9.1.1, pluggy-1.6.0
+rootdir: D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.15.1
+collected 9 items                                                                                                                                                               
+
+tests\test_client.py .........                                                                                                                                            [100%]
+
+============================================================================== 9 passed in 0.12s ===============================================================================
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run ruff check
+All checks passed!
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run pyright
+0 errors, 0 warnings, 0 informations
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> 
