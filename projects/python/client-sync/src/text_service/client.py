@@ -56,16 +56,7 @@ def main() -> None:
                         "list": ("GET", "/texts"),
                     }[command]
                 elif command == "echo":
-                    print("Enter text (empty line to finish):")
-                    # def input_echo() -> None:
-                    #     lines = []
-                    #     while True:
-                    #         line = input()
-                    #         if (line == ""):
-                    #             break
-                    #         lines.append(line)
-                    #     return ("\n".join(lines))
-                    
+                    print("Enter text (press Ctrl+Z to finish):")
                     body = {"text": read_multiline()}
                     method, path = "POST", "/echo"
                 elif command in ("delete-user", "put", "get", "delete"):
