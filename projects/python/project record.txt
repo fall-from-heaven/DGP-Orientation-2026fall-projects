@@ -552,4 +552,19 @@ Please log in again.
 ping / register / login / logout / list / echo / delete-user / put / get / delete / q >
 
 
-服务端业务能力补全（）
+服务端业务能力补全（token过期，测试文件补全）：
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\server-async> uv run pytest
+======================== test session starts ========================
+platform win32 -- Python 3.13.16, pytest-9.1.1, pluggy-1.6.0
+rootdir: D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\server-async
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.15.1
+collected 19 items                                                   
+
+tests\test_http.py .............                               [ 68%]
+tests\test_service.py ......                                   [100%]
+
+======================== 19 passed in 1.00s =========================
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\server-async> 
+
