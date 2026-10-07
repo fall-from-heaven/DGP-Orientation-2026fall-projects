@@ -250,4 +250,42 @@ ping / register / login / logout / list / echo / delete-user / put / get / delet
 
 put\get\delete\delete-user测试程序已完成
 
-边界判断补全、补全测试已完成
+边界判断补全、补全测试已完成:
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run pytest
+============================================================================= test session starts ==============================================================================
+platform win32 -- Python 3.13.16, pytest-9.1.1, pluggy-1.6.0
+rootdir: D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.15.1
+collected 14 items                                                                                                                                                              
+
+tests\test_client.py ..............                                                                                                                                       [100%]
+
+============================================================================== 14 passed in 0.13s ==============================================================================
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> 
+
+
+
+name校验、404边界测试、401边界测试、网络错误测试已全部完成
+
+
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run pytest
+======================== test session starts ========================
+platform win32 -- Python 3.13.16, pytest-9.1.1, pluggy-1.6.0
+rootdir: D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.15.1
+collected 18 items                                                   
+
+tests\test_client.py ..................                        [100%]
+
+======================== 18 passed in 0.11s =========================
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run ruff check --fix
+Found 3 errors (3 fixed, 0 remaining).
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run ruff check      
+All checks passed!
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run pyright         
+0 errors, 0 warnings, 0 informations
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> 
