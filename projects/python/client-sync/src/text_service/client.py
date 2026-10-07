@@ -1,6 +1,15 @@
 import argparse
 import getpass
+import re
 from typing import Any
+
+_NAME_RE = re.compile(r"[A-Za-z0-9_-]{1,64}\Z")
+
+
+def valid_name(name: str) -> bool:
+    return _NAME_RE.fullmatch(name) is not None
+
+
 
 import httpx
 
@@ -59,9 +68,31 @@ def main() -> None:
                     print("Enter text (press Ctrl+Z to finish):")
                     body = {"text": read_multiline()}
                     method, path = "POST", "/echo"
-                elif command in ("delete-user", "put", "get", "delete"):
-                    print("This task is not implemented in the starting code yet.")
-                    continue
+                elif command == "put":
+                    name = input("Enter name of the text file to upload: ")
+                    print("Enter text (press Ctrl+Z to finish):")
+                    body = {"text": read_multiline()}
+                    if not valid_name(name):
+                        print("Invalid file name.")
+                        continue
+                    method ,path = "PUT", f"/texts/{name}"
+                elif command == "get":
+                    name = input("Enter name of the text file to download: ")
+                    if not valid_name(name):
+                        print("Invalid file name.")
+                        continue
+                    body = None
+                    method, path = "GET", f"/texts/{name}"
+                elif command == "delete":
+                    name = input("Enter name of the text file to delete: ")
+                    if not valid_name(name):
+                        print("Invalid file name.")
+                        continue
+                    body = None
+                    method, path = "DELETE", f"/texts/{name}"
+                elif command == "delete-user":
+                    body = None
+                    method, path = "DELETE", "/users/me"
                 else:
                     print("Unknown command.")
                     continue
@@ -73,6 +104,8 @@ def main() -> None:
                     if status == 401:
                         print("Please log in again.")
                     if status == 401 or (command == "logout" and status == 200):
+                        token = ""
+                    if command == "delete-user" and status == 200:
                         token = ""
                 except (httpx.HTTPError, ValueError, KeyError) as exc:
                     print(f"Request failed: {exc}")

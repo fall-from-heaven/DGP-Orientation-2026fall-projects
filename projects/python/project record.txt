@@ -127,3 +127,127 @@ All checks passed!
 PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run pyright
 0 errors, 0 warnings, 0 informations
 PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> 
+
+代码细节改动
+：
+ print("Enter text (empty line to finish):")
+def input_echo() -> None:
+    lines = []
+    while True:
+        line = input()
+        if (line == ""):
+            break
+    lines.append(line)
+    return ("\n".join(lines))
+--》
+print("Enter text (press Ctrl+Z to finish):")
+
+
+
+get、put功能实现：
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > register
+username: plrj1112
+password:
+201 {'data': {'username': 'plrj1112'}}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > login
+username: plrj1112
+password:
+200 {'data': {'expires_in': 300, 'token': 'c1c9dc88ecbaf626373751b697b32956aea02d849ed4a3e609629d8215d23361'}}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > put
+Enter name of the text file to upload: name
+Enter text (press Ctrl+Z to finish):
+test
+words
+^Z
+200 {'data': None}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > get
+This task is not implemented in the starting code yet.
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > list
+200 {'data': ['name']}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > put
+Enter name of the text file to upload: name1
+Enter text (press Ctrl+Z to finish):
+test1
+^Z
+200 {'data': None}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > list
+200 {'data': ['name', 'name1']}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > put
+Enter name of the text file to upload: name
+Enter text (press Ctrl+Z to finish):
+name
+^Z
+200 {'data': None}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > list
+200 {'data': ['name', 'name1']}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > q
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run rm-client --url http://127.0.0.1:7878
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > register
+username: plrj1112
+password:
+409 {'message': 'Username exists'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > login
+username: plrj1112
+password:
+200 {'data': {'expires_in': 300, 'token': '9f6080af0159f5f1ea4f3ee3e9f25ce5e706833fb90496f4f8c8e36c94707513'}}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > list
+200 {'data': ['name', 'name1']}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > get
+Enter name of the text file to download: name
+200 {'data': 'name'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > get
+Enter name of the text file to download: name1
+200 {'data': 'test1'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q >
+
+
+delete、delete-user实现：
+PS C:\Users\孙晟铭> cd D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run rm-client --url http://127.0.0.1:7878
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > register
+username: plrj1112
+password:
+201 {'data': {'username': 'plrj1112'}}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > login
+username: plrj1112
+password:
+200 {'data': {'expires_in': 300, 'token': '5591041fc1f5cf11a34d102721306610e3784a611bdefdaa9952e8520a9a6469'}}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > list
+200 {'data': []}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > put
+Enter name of the text file to upload: name
+Enter text (press Ctrl+Z to finish):
+test
+text
+^Z
+200 {'data': None}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > list
+200 {'data': ['name']}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > get
+Enter name of the text file to download: name
+200 {'data': 'test\ntext'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > delete
+Enter name of the text file to delete: name1
+404 {'message': 'Text not found'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > delete
+Enter name of the text file to delete: name
+200 {'data': None}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > list
+200 {'data': []}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > delete-user
+200 {'data': None}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > login
+username: plrj1112
+password:
+401 {'message': 'Invalid username or password'}
+Please log in again.
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > list
+401 {'message': 'Please log in again'}
+Please log in again.
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q >
+Unknown command.
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q >
+
+put\get\delete\delete-user测试程序已完成
+
+边界判断补全、补全测试已完成
