@@ -14,14 +14,24 @@ ROUTES = (
     ("POST", "/sessions"),
     ("DELETE", "/sessions/current"),
     ("GET", "/texts"),
+    ("POST", "/echo"),
+    ("PUT", "/texts/{name}"),       
+    ("GET", "/texts/{name}"),       
+    ("DELETE", "/texts/{name}"),   
+    ("DELETE", "/users/me"),
 )
 
 
 def route_error(method: str, path: str) -> int | None:
-    allowed = next((verb for verb, route in ROUTES if route == path), None)
-    if allowed is None:
+    methods: set[str] = set()
+    for verb, route in ROUTES:
+        if route == path:
+            methods.add(verb)
+        elif "{" in route and re.fullmatch(route.replace("{name}", "[^/]+"), path):
+            methods.add(verb)
+    if not methods:
         return 404
-    return None if method == allowed else 405
+    return None if method in methods else 405
 
 
 @dataclass
@@ -80,7 +90,10 @@ class Service:
                 user.token = secrets.token_urlsafe(32)
                 # Later server task: record a deadline and return expires_in.
                 return 200, {"data": {"token": user.token}}
-        protected = path in ("/texts", "/sessions/current")
+        protected = (
+            path in ("/texts", "/sessions/current")
+            or (path.startswith("/texts/") and method in ("GET", "PUT", "DELETE"))
+        )
         if protected:
             token = (
                 authorization.removeprefix("Bearer ") if authorization.startswith("Bearer ") else ""
@@ -89,10 +102,35 @@ class Service:
                 user = next((u for u in self.users.values() if token and u.token == token), None)
                 if user is None:
                     return 401, {"message": "Login required"}
-                # Later server task: check token expiry here, before reading or modifying state.
+
                 if path == "/sessions/current" and method == "DELETE":
                     user.token = None
                     return 200, {"data": None}
+
                 if path == "/texts" and method == "GET":
                     return 200, {"data": sorted(user.texts)}
-        return 404, {"message": "Not found"}
+
+                # ↓ 把 /texts/{name} 的处理移到这里（在锁内、user 可用）
+                if path.startswith("/texts/") and method in ("GET", "PUT", "DELETE"):
+                    name = path.removeprefix("/texts/")
+                    if not re.fullmatch(r"[A-Za-z0-9_-]{1,64}", name):
+                        return 400, {"message": "Invalid text name"}
+                    if method == "PUT":
+                        if (
+                            not isinstance(body, dict)
+                            or set(body) != {"text"}
+                            or not isinstance(body["text"], str)
+                        ):
+                            return 400, {"message": "Expected text"}
+                        text = body["text"]
+                        if len(text.encode("utf-8")) > 65536:
+                            return 413, {"message": "text too large"}
+                        user.texts[name] = text
+                        return 200, {"data": None}
+                    if name not in user.texts:
+                        return 404, {"message": "Text not found"}
+                    if method == "GET":
+                        return 200, {"data": user.texts[name]}
+                    del user.texts[name]
+                    return 200, {"data": None}
+

@@ -1,0 +1,533 @@
+
+客户端：
+
+客户端已有功能验证记录：
+服务端：
+PS C:\Users\孙晟铭> cd D:\tools\rm-projects-rust-windows-x86_64-reference-v0.2.1
+PS D:\tools\rm-projects-rust-windows-x86_64-reference-v0.2.1> .\rm-server-async.exe --address 127.0.0.1:7878
+Listening on http://127.0.0.1:7878
+Press Ctrl+C to exit. All in-memory data is lost on exit.
+Routes:
+  GET /ping
+  POST /echo
+  POST /users
+  POST /sessions
+  DELETE /sessions/current
+  DELETE /users/me
+  GET /texts
+  PUT /texts/{name}
+  GET /texts/{name}
+  DELETE /texts/{name}
+Rocket has launched from http://127.0.0.1:7878
+GET "/ping" -> 200 0.1ms
+POST "/users" -> 201 18.5ms
+POST "/sessions" -> 200 18.4ms
+GET "/texts" -> 200 0.0ms
+DELETE "/sessions/current" -> 200 0.0ms
+客户端：
+PS C:\Users\孙晟铭> cd D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run rm-client --url http://127.0.0.1:7878
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > ping
+200 {'data': 'pong'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > register
+username: plrj1112
+password:
+201 {'data': {'username': 'plrj1112'}}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > login
+username: plrj1112
+password:
+200 {'data': {'expires_in': 300, 'token': 'a4d5f680150b0857d265c9c1f5532d4a659fbd5970ebcae3c1f6a5c03bf07723'}}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > list
+200 {'data': []}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > logout
+200 {'data': None}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > q
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync>
+
+结果：服务端均有响应，可正常通信，注册，登录，登出，退出程序。
+
+
+添加功能：echo
+遇到问题：信息接收写作：body = {"message": input("message: ")}，与协议要求（text）冲突
+
+更正：body = {"text": input("text: ")}  功能正常运行：
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run rm-client --url http://127.0.0.1:7878
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > echo
+text: hello
+200 {'data': 'hello'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > q
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> 
+
+添加功能：echo的Unicode、多行、空行提示实现：
+已可正常运行：
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > echo
+Enter text (empty line to finish):
+你好RM😀
+
+200 {'data': '你好RM😀'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > echo
+Enter text (empty line to finish):
+
+No text entered. Please enter at least one line.
+
+No text entered. Please enter at least one line.
+hello
+
+200 {'data': 'hello'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > echo
+Enter text (empty line to finish):
+hello
+world
+
+200 {'data': 'hello\nworld'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > q
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync>
+
+
+发现问题：功能与协议不符合：
+1.echo 未允许空行输入
+2.echo结束命令与文本冲突问题为解决
+已修改并函数化处理：（先使用ctrl+Z 结束输入）：
+
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run rm-client --url http://127.0.0.1:7878
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > echo
+Enter text (empty line to finish):
+
+
+
+
+
+hello,world
+
+
+hello,
+world!
+
+
+
+Hello, World! こんにちは😀
+^Z
+200 {'data': '\n\n\n\n\nhello,world\n\n\nhello,\nworld!\n\n\n\nHello, World! こんにちは😀'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q >
+
+
+
+测试文件更新： list,register, login, logout, echo_common, echo_empty, echo_unicode,echo_multiline,ping 9tests
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run pytest          
+============================================================================= test session starts ==============================================================================
+platform win32 -- Python 3.13.16, pytest-9.1.1, pluggy-1.6.0
+rootdir: D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.15.1
+collected 9 items                                                                                                                                                               
+
+tests\test_client.py .........                                                                                                                                            [100%]
+
+============================================================================== 9 passed in 0.12s ===============================================================================
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run ruff check
+All checks passed!
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run pyright
+0 errors, 0 warnings, 0 informations
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> 
+
+代码细节改动
+：
+ print("Enter text (empty line to finish):")
+def input_echo() -> None:
+    lines = []
+    while True:
+        line = input()
+        if (line == ""):
+            break
+    lines.append(line)
+    return ("\n".join(lines))
+--》
+print("Enter text (press Ctrl+Z to finish):")
+
+
+
+get、put功能实现：
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > register
+username: plrj1112
+password:
+201 {'data': {'username': 'plrj1112'}}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > login
+username: plrj1112
+password:
+200 {'data': {'expires_in': 300, 'token': 'c1c9dc88ecbaf626373751b697b32956aea02d849ed4a3e609629d8215d23361'}}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > put
+Enter name of the text file to upload: name
+Enter text (press Ctrl+Z to finish):
+test
+words
+^Z
+200 {'data': None}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > get
+This task is not implemented in the starting code yet.
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > list
+200 {'data': ['name']}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > put
+Enter name of the text file to upload: name1
+Enter text (press Ctrl+Z to finish):
+test1
+^Z
+200 {'data': None}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > list
+200 {'data': ['name', 'name1']}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > put
+Enter name of the text file to upload: name
+Enter text (press Ctrl+Z to finish):
+name
+^Z
+200 {'data': None}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > list
+200 {'data': ['name', 'name1']}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > q
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run rm-client --url http://127.0.0.1:7878
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > register
+username: plrj1112
+password:
+409 {'message': 'Username exists'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > login
+username: plrj1112
+password:
+200 {'data': {'expires_in': 300, 'token': '9f6080af0159f5f1ea4f3ee3e9f25ce5e706833fb90496f4f8c8e36c94707513'}}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > list
+200 {'data': ['name', 'name1']}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > get
+Enter name of the text file to download: name
+200 {'data': 'name'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > get
+Enter name of the text file to download: name1
+200 {'data': 'test1'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q >
+
+
+delete、delete-user实现：
+PS C:\Users\孙晟铭> cd D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run rm-client --url http://127.0.0.1:7878
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > register
+username: plrj1112
+password:
+201 {'data': {'username': 'plrj1112'}}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > login
+username: plrj1112
+password:
+200 {'data': {'expires_in': 300, 'token': '5591041fc1f5cf11a34d102721306610e3784a611bdefdaa9952e8520a9a6469'}}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > list
+200 {'data': []}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > put
+Enter name of the text file to upload: name
+Enter text (press Ctrl+Z to finish):
+test
+text
+^Z
+200 {'data': None}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > list
+200 {'data': ['name']}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > get
+Enter name of the text file to download: name
+200 {'data': 'test\ntext'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > delete
+Enter name of the text file to delete: name1
+404 {'message': 'Text not found'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > delete
+Enter name of the text file to delete: name
+200 {'data': None}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > list
+200 {'data': []}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > delete-user
+200 {'data': None}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > login
+username: plrj1112
+password:
+401 {'message': 'Invalid username or password'}
+Please log in again.
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > list
+401 {'message': 'Please log in again'}
+Please log in again.
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q >
+Unknown command.
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q >
+
+put\get\delete\delete-user测试程序已完成
+
+边界判断补全、补全测试已完成:
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run pytest
+============================================================================= test session starts ==============================================================================
+platform win32 -- Python 3.13.16, pytest-9.1.1, pluggy-1.6.0
+rootdir: D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.15.1
+collected 14 items                                                                                                                                                              
+
+tests\test_client.py ..............                                                                                                                                       [100%]
+
+============================================================================== 14 passed in 0.13s ==============================================================================
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> 
+
+
+
+name校验、404边界测试、401边界测试、网络错误测试已全部完成
+
+
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run pytest
+======================== test session starts ========================
+platform win32 -- Python 3.13.16, pytest-9.1.1, pluggy-1.6.0
+rootdir: D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.15.1
+collected 18 items                                                   
+
+tests\test_client.py ..................                        [100%]
+
+======================== 18 passed in 0.11s =========================
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run ruff check --fix
+Found 3 errors (3 fixed, 0 remaining).
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run ruff check      
+All checks passed!
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run pyright         
+0 errors, 0 warnings, 0 informations
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> 
+
+
+
+服务端搭建：
+
+put,get,delete搭建与逻辑补全：
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > register
+username: plrj1112
+password:
+201 {'data': {'username': 'plrj1112'}}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > login
+username: plrj1112
+password:
+200 {'data': {'token': 'l-Qp2au_5o4dwksj2de5XWaM2it1X9-BGarpuQPxCi4'}}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > put
+Enter name of the text file to upload: name
+Enter text (press Ctrl+Z to finish):
+hello
+world
+^Z
+200 {'data': None}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > list
+200 {'data': ['name']}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > get
+Enter name of the text file to download: name
+200 {'data': 'hello\nworld'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > delete
+Enter name of the text file to delete: name
+200 {'data': None}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > list
+200 {'data': []}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q >
+
+
+
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\server-async> uv run pytest
+======================== test session starts ========================
+platform win32 -- Python 3.13.16, pytest-9.1.1, pluggy-1.6.0
+rootdir: D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\server-async
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.15.1
+collected 17 items                                                   
+
+tests\test_http.py .....FFFF.....                              [ 82%]
+tests\test_service.py ...                                      [100%]
+
+============================= FAILURES ==============================
+______ test_unimplemented_routes_are_absent[DELETE-/users/me] _______
+
+client = <httpx2.AsyncClient object at 0x000001EF335E0B90>
+method = 'DELETE', path = '/users/me'
+
+    @pytest.mark.parametrize(
+        ("method", "path"),
+        [
+            ("DELETE", "/users/me"),
+            ("PUT", "/texts/note"),
+            ("GET", "/texts/note"),
+            ("DELETE", "/texts/note"),
+        ],
+    )
+    async def test_unimplemented_routes_are_absent(client: AsyncClient, method: str, path: str) -> None:
+>       assert (await client.request(method, path)).status_code == 404
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_http.py:73: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.venv\Lib\site-packages\httpx2\_client.py:1635: in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\httpx2\_client.py:1818: in send
+    response = await self._send_handling_auth(
+.venv\Lib\site-packages\httpx2\_client.py:1846: in _send_handling_auth
+    response = await self._send_handling_redirects(
+.venv\Lib\site-packages\httpx2\_client.py:1881: in _send_handling_redirects
+    response = await self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\httpx2\_client.py:1915: in _send_single_request
+    response = await transport.handle_async_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\httpx2\_transports\asgi.py:161: in handle_async_request
+    await self.app(scope, receive, send)
+.venv\Lib\site-packages\fastapi\applications.py:1163: in __call__
+    await super().__call__(scope, receive, send)
+.venv\Lib\site-packages\starlette\applications.py:107: in __call__
+    await self.middleware_stack(scope, receive, send)
+.venv\Lib\site-packages\starlette\middleware\errors.py:186: in __call__
+    raise exc
+.venv\Lib\site-packages\starlette\middleware\errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+.venv\Lib\site-packages\starlette\middleware\base.py:191: in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ^^^^^^^^^^^^^^^^^^^^
+C:\Users\孙晟铭\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\contextlib.py:162: in __exit__
+    self.gen.throw(value)
+.venv\Lib\site-packages\starlette\_utils.py:87: in collapse_excgroups
+    raise exc
+.venv\Lib\site-packages\starlette\middleware\base.py:193: in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src\text_service\server.py:43: in log_request
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\starlette\middleware\base.py:168: in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+.venv\Lib\site-packages\starlette\middleware\base.py:144: in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+.venv\Lib\site-packages\starlette\middleware\exceptions.py:63: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+.venv\Lib\site-packages\starlette\_exception_handler.py:53: in wrapped_app
+    raise exc
+.venv\Lib\site-packages\starlette\_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py:18: in __call__
+    await self.app(scope, receive, send)
+.venv\Lib\site-packages\starlette\routing.py:716: in __call__
+    await self.middleware_stack(scope, receive, send)
+.venv\Lib\site-packages\fastapi\routing.py:2734: in app
+    await route.handle(scope, receive, send)
+.venv\Lib\site-packages\fastapi\routing.py:1281: in handle
+    await super().handle(scope, receive, send)
+.venv\Lib\site-packages\starlette\routing.py:290: in handle
+    await self.app(scope, receive, send)
+.venv\Lib\site-packages\fastapi\routing.py:158: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+.venv\Lib\site-packages\starlette\_exception_handler.py:53: in wrapped_app
+    raise exc
+.venv\Lib\site-packages\starlette\_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+.venv\Lib\site-packages\fastapi\routing.py:144: in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\fastapi\routing.py:706: in app
+    raw_response = await run_endpoint_function(
+.venv\Lib\site-packages\fastapi\routing.py:352: in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+request = <starlette.requests.Request object at 0x000001EF335AFC50>
+
+    @app.api_route(
+        "/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"]
+    )
+    async def dispatch(request: Request) -> JSONResponse:
+        body = None
+        if request.method in ("POST", "PUT"):
+            raw = bytearray()
+            async for chunk in request.stream():
+                raw.extend(chunk)
+                if len(raw) > 512 * 1024:
+                    return JSONResponse({"message": "Request body too large"}, status_code=413)
+            try:
+                body = json.loads(
+                    raw.decode("utf-8"),
+                    parse_constant=lambda value: (_ for _ in ()).throw(ValueError(value)),
+                )
+            except (ValueError, UnicodeError):
+                return JSONResponse({"message": "Expected UTF-8 JSON"}, status_code=400)
+        # Password hashing is blocking: keep it off the event loop.
+>       status, result = await asyncio.to_thread(
+        ^^^^^^^^^^^^^^
+            service.handle,
+            request.method,
+            request.url.path,
+            body,
+            request.headers.get("Authorization", ""),
+        )
+E       TypeError: cannot unpack non-iterable NoneType object
+
+src\text_service\server.py:74: TypeError
+_______ test_unimplemented_routes_are_absent[PUT-/texts/note] _______
+
+client = <httpx2.AsyncClient object at 0x000001EF33635370>
+method = 'PUT', path = '/texts/note'
+
+    @pytest.mark.parametrize(
+        ("method", "path"),
+        [
+            ("DELETE", "/users/me"),
+            ("PUT", "/texts/note"),
+            ("GET", "/texts/note"),
+            ("DELETE", "/texts/note"),
+        ],
+    )
+    async def test_unimplemented_routes_are_absent(client: AsyncClient, method: str, path: str) -> None:
+>       assert (await client.request(method, path)).status_code == 404
+E       assert 400 == 404
+E        +  where 400 = <Response [400 Bad Request]>.status_code
+
+tests\test_http.py:73: AssertionError
+_______ test_unimplemented_routes_are_absent[GET-/texts/note] _______
+
+client = <httpx2.AsyncClient object at 0x000001EF336367A0>
+method = 'GET', path = '/texts/note'
+
+    @pytest.mark.parametrize(
+        ("method", "path"),
+        [
+            ("DELETE", "/users/me"),
+            ("PUT", "/texts/note"),
+            ("GET", "/texts/note"),
+            ("DELETE", "/texts/note"),
+        ],
+    )
+    async def test_unimplemented_routes_are_absent(client: AsyncClient, method: str, path: str) -> None:
+>       assert (await client.request(method, path)).status_code == 404
+E       assert 401 == 404
+E        +  where 401 = <Response [401 Unauthorized]>.status_code
+
+tests\test_http.py:73: AssertionError
+_____ test_unimplemented_routes_are_absent[DELETE-/texts/note] ______
+
+client = <httpx2.AsyncClient object at 0x000001EF3362E550>
+method = 'DELETE', path = '/texts/note'
+
+    @pytest.mark.parametrize(
+        ("method", "path"),
+        [
+            ("DELETE", "/users/me"),
+            ("PUT", "/texts/note"),
+            ("GET", "/texts/note"),
+            ("DELETE", "/texts/note"),
+        ],
+    )
+    async def test_unimplemented_routes_are_absent(client: AsyncClient, method: str, path: str) -> None:
+>       assert (await client.request(method, path)).status_code == 404
+E       assert 401 == 404
+E        +  where 401 = <Response [401 Unauthorized]>.status_code
+
+tests\test_http.py:73: AssertionError
+====================== short test summary info ======================
+FAILED tests/test_http.py::test_unimplemented_routes_are_absent[DELETE-/users/me] - TypeError: cannot unpack non-iterable NoneType object
+FAILED tests/test_http.py::test_unimplemented_routes_are_absent[PUT-/texts/note] - assert 400 == 404
+FAILED tests/test_http.py::test_unimplemented_routes_are_absent[GET-/texts/note] - assert 401 == 404
+FAILED tests/test_http.py::test_unimplemented_routes_are_absent[DELETE-/texts/note] - assert 401 == 404
+=================== 4 failed, 13 passed in 1.16s ====================
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\server-async> 
