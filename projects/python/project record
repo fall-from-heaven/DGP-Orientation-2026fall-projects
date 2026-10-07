@@ -79,3 +79,30 @@ world
 200 {'data': 'hello\nworld'}
 ping / register / login / logout / list / echo / delete-user / put / get / delete / q > q
 PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync>
+
+
+发现问题：功能与协议不符合：
+1.echo 未允许空行输入
+2.echo结束命令与文本冲突问题为解决
+已修改并函数化处理：（先使用ctrl+Z 结束输入）：
+
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run rm-client --url http://127.0.0.1:7878
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > echo
+Enter text (empty line to finish):
+
+
+
+
+
+hello,world
+
+
+hello,
+world!
+
+
+
+Hello, World! こんにちは😀
+^Z
+200 {'data': '\n\n\n\n\nhello,world\n\n\nhello,\nworld!\n\n\n\nHello, World! こんにちは😀'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q >

@@ -48,16 +48,23 @@ def main() -> None:
                     }[command]
                 elif command == "echo":
                     print("Enter text (empty line to finish):")
-                    lines = []
-                    while True:
-                        line = input()
-                        if (line == ""):
-                             if not lines:
-                                print("No text entered. Please enter at least one line.")
-                                continue
-                             break
-                        lines.append(line)
-                    body = {"text": "\n".join(lines)}
+                    # def input_echo() -> None:
+                    #     lines = []
+                    #     while True:
+                    #         line = input()
+                    #         if (line == ""):
+                    #             break
+                    #         lines.append(line)
+                    #     return ("\n".join(lines))
+                    def read_multiline() -> str:
+                        lines = []
+                        try:
+                            while True:
+                                lines.append(input())
+                        except EOFError:          # Ctrl+Z 触发，作为结束
+                            pass
+                        return "\n".join(lines)
+                    body = {"text": read_multiline()}
                     method, path = "POST", "/echo"
                 elif command in ("delete-user", "put", "get", "delete"):
                     print("This task is not implemented in the starting code yet.")
