@@ -91,6 +91,10 @@ class Service:
                 user.token_deadline = time.monotonic() + self.token_ttl  # 设置 token 
                 # Later server task: record a deadline and return expires_in.
                 return 200, {"data": {"token": user.token, "expires_in": self.token_ttl}}
+        if path == "/echo" and method == "POST":
+            if not isinstance(body, dict) or set(body) != {"text"} or not isinstance(body["text"], str):
+                return 400, {"message": "Expected text"}
+            return 200, {"data": body["text"]}
         protected = (
             path in ("/texts", "/sessions/current")
             or (path.startswith("/texts/") and method in ("GET", "PUT", "DELETE"))

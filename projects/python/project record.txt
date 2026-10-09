@@ -289,3 +289,231 @@ All checks passed!
 PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run pyright         
 0 errors, 0 warnings, 0 informations
 PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> 
+
+
+
+发现项目重大问题：服务端未编写echo功能
+原因：疑似在copy代码的时候粗心将echo代码删去
+现已补全并自行测试：
+服务端终端：
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\server-async> uv run rm-server
+INFO:     Started server process [29364]
+INFO:     Waiting for application startup.
+INFO:     Press Ctrl+C to exit. All in-memory data is lost on exit.
+INFO:     Routes:
+INFO:       GET /ping
+INFO:       POST /users
+INFO:       POST /sessions
+INFO:       DELETE /sessions/current
+INFO:       GET /texts
+INFO:       POST /echo
+INFO:       PUT /texts/{name}
+INFO:       GET /texts/{name}
+INFO:       DELETE /texts/{name}
+INFO:       DELETE /users/me
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:7878 (Press CTRL+C to quit)
+INFO:     GET "/ping" -> 200 5.1ms
+INFO:     GET "/texts" -> 401 1.2ms
+INFO:     DELETE "/sessions/current" -> 401 0.9ms
+INFO:     DELETE "/users/me" -> 401 0.6ms
+INFO:     PUT "/texts/name" -> 401 1.3ms
+INFO:     GET "/texts/name" -> 401 0.7ms
+INFO:     DELETE "/texts/name" -> 401 0.7ms
+INFO:     POST "/sessions" -> 400 1.2ms
+INFO:     POST "/sessions" -> 401 1.3ms
+INFO:     POST "/users" -> 201 31.7ms
+INFO:     POST "/users" -> 409 31.9ms
+INFO:     POST "/sessions" -> 400 1.1ms
+INFO:     POST "/sessions" -> 401 32.4ms
+INFO:     POST "/sessions" -> 200 33.4ms
+INFO:     GET "/texts" -> 200 0.6ms
+INFO:     PUT "/texts/name" -> 200 1.2ms
+INFO:     PUT "/texts/name1" -> 200 1.1ms
+INFO:     GET "/texts/name" -> 200 0.7ms
+INFO:     GET "/texts/name1" -> 200 1.1ms
+INFO:     GET "/texts" -> 200 0.6ms
+INFO:     DELETE "/texts/n" -> 404 0.8ms
+INFO:     DELETE "/texts/name" -> 200 0.6ms
+INFO:     GET "/texts" -> 200 0.6ms
+INFO:     POST "/echo" -> 200 0.9ms
+INFO:     POST "/echo" -> 200 1.1ms
+INFO:     GET "/texts" -> 401 0.8ms
+INFO:     POST "/sessions" -> 200 31.6ms
+INFO:     DELETE "/users/me" -> 200 0.7ms
+INFO:     POST "/sessions" -> 401 1.3ms
+INFO:     POST "/echo" -> 200 1.1ms
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [29364]
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\server-async>
+
+客户端终端：
+
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run rm-client --url http://127.0.0.1:7878
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > none
+Unknown command.
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > ping
+200 {'data': 'pong'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > list
+401 {'message': 'Login required'}
+Please log in again.
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > logout
+401 {'message': 'Login required'}
+Please log in again.
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > delete-user
+401 {'message': 'Login required'}
+Please log in again.
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > put
+Enter name of the text file to upload: name
+Enter text (press Ctrl+Z to finish):
+sss
+^Z
+401 {'message': 'Login required'}
+Please log in again.
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > get
+Enter name of the text file to download: name
+401 {'message': 'Login required'}
+Please log in again.
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > delete
+Enter name of the text file to delete: name
+401 {'message': 'Login required'}
+Please log in again.
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > login
+username: username
+password:
+400 {'message': 'Invalid username or password length'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > #(4 letter password input just now)
+Unknown command.
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > login
+username: username
+password:
+401 {'message': 'Invalid username or password'}
+Please log in again.
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > register
+username: username
+password:
+201 {'data': {'username': 'username'}}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > register
+username: username
+password:
+409 {'message': 'Username exists'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > login
+username: username
+password:
+400 {'message': 'Invalid username or password length'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > username
+Unknown command.
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > login
+username: username
+password:
+401 {'message': 'Invalid username or password'}
+Please log in again.
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > login
+username: username
+password:
+200 {'data': {'token': 'GDBpUD9DNEnbMfG4UgkftZEYpl1gcFgIEEIvoNqgKBU', 'expires_in': 300}}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > list
+200 {'data': []}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > put
+Enter name of the text file to upload: name
+Enter text (press Ctrl+Z to finish):
+^Z
+200 {'data': None}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > put
+Enter name of the text file to upload: name1
+Enter text (press Ctrl+Z to finish):
+hello!
+^Z
+200 {'data': None}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > get
+Enter name of the text file to download: name
+200 {'data': ''}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > get
+Enter name of the text file to download: name1
+200 {'data': 'hello!'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > list
+200 {'data': ['name', 'name1']}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > delete
+Enter name of the text file to delete: n
+404 {'message': 'Text not found'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > delete
+Enter name of the text file to delete: name
+200 {'data': None}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > list
+200 {'data': ['name1']}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > echo
+Enter text (press Ctrl+Z to finish):
+hello!
+world
+^Z
+200 {'data': 'hello!\nworld'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > echo
+Enter text (press Ctrl+Z to finish):
+你好！！😀こんにちは
+^Z
+200 {'data': '你好！！😀こんにちは'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > put
+Enter name of the text file to upload: こんにちは
+Enter text (press Ctrl+Z to finish):
+^Z
+Invalid file name.
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > list
+401 {'message': 'Token expired'}
+Please log in again.
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > login
+username: username
+password:
+200 {'data': {'token': 'ezOEOlMuOP1jx77MtZvwLFRYzdLae2N5b1LPZAf_IWo', 'expires_in': 300}}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > delete-user
+200 {'data': None}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > login
+username: username
+password:
+401 {'message': 'Invalid username or password'}
+Please log in again.
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > echo
+Enter text (press Ctrl+Z to finish):
+こんにちは
+こんにちは
+^Z
+200 {'data': 'こんにちは\nこんにちは'}
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > q
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run rm-client
+ping / register / login / logout / list / echo / delete-user / put / get / delete / q > q
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync>
+
+测试程序结果：
+
+PS D:\RM2026-DGP> cd d:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> uv run pytest
+==================================================================== test session starts =====================================================================
+platform win32 -- Python 3.13.16, pytest-9.1.1, pluggy-1.6.0
+rootdir: D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.15.1
+collected 18 items                                                                                                                                            
+
+tests\test_client.py ..................                                                                                                                 [100%]
+
+===================================================================== 18 passed in 0.15s =====================================================================
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\client-sync> cd d:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\server-async
+
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\server-async> uv run pytest                                                                 
+==================================================================== test session starts =====================================================================
+platform win32 -- Python 3.13.16, pytest-9.1.1, pluggy-1.6.0
+rootdir: D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\server-async
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.15.1
+collected 19 items                                                                                                                                            
+
+tests\test_http.py .............                                                                                                                        [ 68%]
+tests\test_service.py ......                                                                                                                            [100%]
+
+===================================================================== 19 passed in 1.07s =====================================================================
+PS D:\RM2026-DGP\DGP-Orientation-2026fall-projects\projects\python\server-async> 
+
+
